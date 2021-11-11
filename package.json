@@ -1,0 +1,26 @@
+{
+  "name": "core",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha -r ts-node/register ./**/*.test.ts",
+    "build": "tsc --build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "typescript": "^4.4.4"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.2.22",
+    "@types/mocha": "^9.0.0",
+    "@typescript-eslint/eslint-plugin": "^5.3.1",
+    "@typescript-eslint/parser": "^5.3.1",
+    "chai": "^4.3.4",
+    "eslint": "^8.2.0",
+    "mocha": "^9.1.3",
+    "ts-node": "^10.4.0"
+  }
+}
