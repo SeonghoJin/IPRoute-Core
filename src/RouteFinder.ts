@@ -1,20 +1,25 @@
 import {RouteFinderStatus} from "./RouteFinderStatus";
 import {RouteFinderErrorMessage} from "./RouteFinderErrorMessage";
 import {ChildProcess} from 'child_process';
-import {EventEmitter} from 'events';
 import {createInterface} from 'readline';
 import {RouteFinderProcessFactory} from "./process/RouteFinderProcessFactory";
 import {RouteFinderParser} from "./parser/RouteFinderParser";
+import {Destination, Hop} from "./interfaces";
 
-export class RouteFinder extends EventEmitter{
+export class RouteFinder{
     hostname: string;
     status: RouteFinderStatus;
     private childProcess: ChildProcess | null = null;
     private parser: RouteFinderParser;
     private processFactory: RouteFinderProcessFactory;
+    private onHopCallback: ((hop: Hop) => void )| null = null;
+    private onDestinationCallback: ((destination: Destination) => void) | null = null;
+    private onErrorCallback: ((err: Error) => void) | null = null;
+    private onCloseCallback: ((msg: string) => void) | null = null;
+    private onRawMessageCallback: ((msg: string) => void) | null = null;
+
 
     constructor(hostname: string, parser: RouteFinderParser, processFactory: RouteFinderProcessFactory) {
-        super();
         this.hostname = hostname;
         this.status = RouteFinderStatus.BeforeStart;
         this.parser = parser;
@@ -35,12 +40,41 @@ export class RouteFinder extends EventEmitter{
         } catch (e) {
             throw new Error(RouteFinderErrorMessage.NotCreatedFinder);
         }
+        return this;
+    }
+
+    public onHop(cb: (hop: Hop) => void){
+        this.onHopCallback = cb;
+        return this;
+    }
+
+    public onDestination(cb: (destination: Destination) => void){
+        this.onDestinationCallback = cb;
+        return this;
+    }
+
+    public onError(cb: (error: Error) => void){
+        this.onErrorCallback = cb;
+        return this;
+    }
+
+    public onClose(cb: (msg: string) => void){
+        this.onCloseCallback = cb;
+        return this;
+    }
+
+    public onRawMessage(cb: (msg: string) => void){
+        this.onRawMessageCallback = cb;
+        return this;
     }
 
     private setOnClose(childProcess : ChildProcess){
         childProcess.on('close', ((code: string) => {
-            this.emit('close', code);
+            if(this.onCloseCallback != null){
+                this.onCloseCallback(code);
+            }
         }))
+        return this;
     }
 
     private setOnReadLineAtStdout(childProcess: ChildProcess){
@@ -48,7 +82,15 @@ export class RouteFinder extends EventEmitter{
             throw new Error(RouteFinderErrorMessage.NotCreatedStdout);
         }
         createInterface(childProcess.stdout).on('line', ((code: string) => {
-            this.emit('data', code);
+            if(this.onHopCallback != null){
+                const parsedHop = this.parser.parsingHop(code);
+                if(parsedHop != null){
+                    this.onHopCallback(parsedHop);
+                }
+            }
+            if(this.onRawMessageCallback != null){
+                this.onRawMessageCallback(code);
+            }
         }));
     }
 
@@ -56,14 +98,22 @@ export class RouteFinder extends EventEmitter{
         if(childProcess.stderr === null){
             throw new Error(RouteFinderErrorMessage.NotCreatedStdout);
         }
-        createInterface(childProcess.stderr).on('line', ((code: string) => {
-            this.emit('data', code);
+        createInterface(childProcess.stderr).once('line', ((code: string) => {
+            if(this.onDestinationCallback != null){
+                const parsedDestination = this.parser.parsingDestination(code);
+                if(parsedDestination != null){
+                    this.onDestinationCallback(parsedDestination);
+                }
+            }
         }));
     }
 
     private setOnError(childProcess: ChildProcess){
         childProcess.on('error', ((err: Error) => {
-            this.emit('error', err);
+            if(this.onErrorCallback != null){
+                this.onErrorCallback(err)
+                this.end();
+            }
         }))
     }
 
@@ -74,7 +124,12 @@ export class RouteFinder extends EventEmitter{
         if(this.status !== RouteFinderStatus.Start){
             throw new Error(RouteFinderErrorMessage.NotStarted);
         }
-        this.childProcess?.kill();
+        if(this.childProcess == null){
+            throw new Error(RouteFinderErrorMessage.NotStarted);
+        }
+        if(!this.childProcess?.killed){
+            this.childProcess?.kill();
+        }
         this.status = RouteFinderStatus.End;
     }
 

@@ -3,10 +3,11 @@ import {UnixRouteFinderProcessFactory} from "../src/process/UnixRouteFinderProce
 import {platform} from "os"
 import {it} from "mocha";
 import {RouteFinder} from "../src/RouteFinder";
-import {expect} from "chai";
+import {assert, expect} from "chai";
 import {RouteFinderStatus} from "../src/RouteFinderStatus";
 
-describe('UnixRouteFinder Test', function () {
+describe('UnixRouteFinder Status Test', function () {
+
     const currentOS : NodeJS.Platform = platform();
     if(currentOS !== 'darwin' && currentOS !== 'linux'){
         return;
@@ -22,11 +23,9 @@ describe('UnixRouteFinder Test', function () {
 
     it("routeFinder 시작 후", async () => {
         const routeFinder = new RouteFinder("naver.com", parser, factory);
-        routeFinder.on('data', (data: string) => {
+        routeFinder.onDestination((destination => {
             expect(routeFinder.status).to.be.eql(RouteFinderStatus.Start);
-        })
-        routeFinder.start();
-        routeFinder.end();
+        })).start().end();
     });
 
     it("routeFinder 종료", async () => {
@@ -35,4 +34,49 @@ describe('UnixRouteFinder Test', function () {
         routeFinder.end();
         expect(routeFinder.status).to.be.eql(RouteFinderStatus.End);
     });
+
+});
+
+describe('UnixRouteFinder Feature Test', function () {
+
+    const currentOS : NodeJS.Platform = platform();
+    if(currentOS !== 'darwin' && currentOS !== 'linux'){
+        return;
+    }
+
+    const parser = new UnixRouteFinderParser();
+    const factory = new UnixRouteFinderProcessFactory();
+
+    it("onDestination", async () => {
+        return new Promise((res) => {
+            const routeFinder = new RouteFinder("localhost", parser, factory);
+            routeFinder.onDestination(destination => {
+                assert(destination.ip != null);
+            }).onClose(msg => {
+                res();
+            }).start();
+        })
+    })
+
+    it("onHop", async () => {
+        return new Promise((res) => {
+            const routeFinder = new RouteFinder("localhost", parser, factory);
+            routeFinder.onHop(hop => {
+                assert(hop.hop === 1);
+            }).onClose(msg => {
+                res();
+            }).start();
+        })
+    })
+
+    it("force end", async () => {
+        return new Promise((res) => {
+            const routeFinder = new RouteFinder("localhost", parser, factory);
+            routeFinder.onClose((msg) => {
+                assert(msg === null)
+                res();
+            }).start().end();
+        })
+    })
+
 });

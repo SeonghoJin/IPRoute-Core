@@ -1,3 +1,6 @@
+import {Destination, Hop} from "../interfaces";
+
 export interface RouteFinderParser {
-    parsingData : (code : string) => string;
+    parsingHop : (code : string) => Hop | null;
+    parsingDestination : (code : string) => Destination | null;
 }
