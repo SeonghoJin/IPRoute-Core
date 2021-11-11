@@ -11,6 +11,10 @@ jobs:
     strategy:
       matrix:
         node-version: [14.x]
+        ts-project: [src/tsconfig.json]
+
+    env:
+      TS_NODE_PROJECT: ${{ matrix.ts-project }}
 
     steps:
     - uses: actions/checkout@v2
