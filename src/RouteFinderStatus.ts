@@ -1,3 +1,3 @@
 export enum RouteFinderStatus {
-    BeforeStart,Start, End
+    BeforeStart,Start, End, Error
 }
