@@ -1,5 +1,5 @@
 {
-  "name": "@moretall/ip-trace",
+  "name": "ip-trace",
   "version": "0.0.1",
   "description": "",
   "main": "index.js",
