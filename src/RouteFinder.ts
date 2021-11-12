@@ -38,6 +38,7 @@ export class RouteFinder{
             this.setOnReadLineAtStderr(this.childProcess);
             this.setOnError(this.childProcess);
         } catch (e) {
+            this.status = RouteFinderStatus.BeforeStart;
             throw new Error(RouteFinderErrorMessage.NotCreatedFinder);
         }
         return this;
@@ -70,8 +71,8 @@ export class RouteFinder{
 
     private setOnClose(childProcess : ChildProcess){
         childProcess.on('close', ((code: string) => {
+            this.end();
             if(this.onCloseCallback != null){
-                this.end();
                 this.onCloseCallback(code);
             }
         }))
@@ -119,19 +120,16 @@ export class RouteFinder{
     }
 
     end() {
-        if(this.status === RouteFinderStatus.End){
-            throw new Error(RouteFinderErrorMessage.AlreadyEnded);
-        }
-        if(this.status !== RouteFinderStatus.Start){
+        if(this.status === RouteFinderStatus.BeforeStart){
             throw new Error(RouteFinderErrorMessage.NotStarted);
         }
         if(this.childProcess == null){
             throw new Error(RouteFinderErrorMessage.NotStarted);
         }
+        this.status = RouteFinderStatus.End;
         if(!this.childProcess?.killed){
             this.childProcess?.kill();
         }
-        this.status = RouteFinderStatus.End;
     }
 
 }

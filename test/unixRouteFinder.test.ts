@@ -25,14 +25,15 @@ describe('UnixRouteFinder Status Test', function () {
         const routeFinder = new RouteFinder("naver.com", parser, factory);
         routeFinder.onDestination((destination => {
             expect(routeFinder.status).to.be.eql(RouteFinderStatus.Start);
-        })).start().end();
+            routeFinder.end();
+        })).start()
     });
 
     it("routeFinder 종료", async () => {
-        const routeFinder = new RouteFinder("naver.com", parser, factory);
-        routeFinder.start();
-        routeFinder.end();
-        expect(routeFinder.status).to.be.eql(RouteFinderStatus.End);
+        const routeFinder = new RouteFinder("localhost", parser, factory);
+        routeFinder.start().onClose(() => {
+            expect(routeFinder.status).to.be.eql(RouteFinderStatus.End);
+        });
     });
 
 });
@@ -72,15 +73,17 @@ describe('UnixRouteFinder Feature Test', function () {
     it("force end", async () => {
         return new Promise((res) => {
             const routeFinder = new RouteFinder("naver.com", parser, factory);
-            routeFinder.onClose((msg) => {
+            routeFinder.onHop(() => {
+                routeFinder.end();
+            }).onClose((msg) => {
                 if(currentOS === "darwin"){
                     expect(msg).to.be.equal(null);
                 }
                 if(currentOS === 'linux'){
                     expect(msg).to.be.equal(-2);
                 }
-            }).start().end();
-            res();
+                res();
+            }).start();
         })
     })
 
