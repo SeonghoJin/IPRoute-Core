@@ -71,7 +71,7 @@ describe('UnixRouteFinder Feature Test', function () {
 
     it("force end", async () => {
         return new Promise((res) => {
-            const routeFinder = new RouteFinder("localhost", parser, factory);
+            const routeFinder = new RouteFinder("naver.com", parser, factory);
             routeFinder.onClose((msg) => {
                 if(currentOS === "darwin"){
                     expect(msg).to.be.equal(null);
