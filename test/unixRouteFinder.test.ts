@@ -79,8 +79,8 @@ describe('UnixRouteFinder Feature Test', function () {
                 if(currentOS === 'linux'){
                     expect(msg).to.be.equal(-2);
                 }
-                res();
             }).start().end();
+            res();
         })
     })
 
