@@ -71,6 +71,7 @@ export class RouteFinder{
     private setOnClose(childProcess : ChildProcess){
         childProcess.on('close', ((code: string) => {
             if(this.onCloseCallback != null){
+                this.end();
                 this.onCloseCallback(code);
             }
         }))

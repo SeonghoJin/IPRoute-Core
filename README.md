@@ -1,6 +1,6 @@
 ## Installation
 ```
-npm install 
+npm install ip-trace
 ```
 ## Start
 
@@ -9,3 +9,5 @@ npm install
 npm run test
 ```
 
+## To do
+- [ ] support windows
