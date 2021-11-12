@@ -1,5 +1,5 @@
 {
-  "name": "ip-route",
+  "name": "@moretall/ip-route",
   "version": "0.0.1",
   "description": "",
   "main": "index.js",
@@ -9,7 +9,7 @@
     "prepare": "husky install"
   },
   "keywords": [],
-  "author": "",
+  "author": "moretall",
   "license": "ISC",
   "dependencies": {
     "@types/node": "^16.11.7",
