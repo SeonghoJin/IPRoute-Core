@@ -73,7 +73,7 @@ describe('UnixRouteFinder Feature Test', function () {
         return new Promise((res) => {
             const routeFinder = new RouteFinder("localhost", parser, factory);
             routeFinder.onClose((msg) => {
-                assert(msg === null)
+                expect(msg).to.be.equal(null);
                 res();
             }).start().end();
         })
