@@ -1,3 +1,6 @@
+# ip-trace
+An npm module that uses traceroute to find routed routes to a destination. A more detailed way to use this library is in './test'.
+
 ## Installation
 ```
 npm install ip-trace
