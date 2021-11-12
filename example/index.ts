@@ -1,1 +1,1 @@
-import {iptrace} from 'ip-trace'
+import {} from 'ip-trace';
