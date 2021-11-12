@@ -4,7 +4,6 @@
 name: deploy
 
 on: workflow_dispatch
-  - pu
 
 jobs:
   build:
