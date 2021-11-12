@@ -112,9 +112,9 @@ export class RouteFinder{
 
     private setOnError(childProcess: ChildProcess){
         childProcess.on('error', ((err: Error) => {
+            this.end()
             if(this.onErrorCallback != null){
                 this.onErrorCallback(err)
-                this.end();
             }
         }))
     }
