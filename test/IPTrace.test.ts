@@ -25,6 +25,7 @@ describe("iptrace test", () => {
     it("application test2", (done) => {
         const os = platform();
         if(os !== "darwin"){
+            done();
             return;
         }
         const iptraceInstance = iptrace("localhost");
