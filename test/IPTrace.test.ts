@@ -21,7 +21,7 @@ describe("iptrace test", () => {
     });
 
     it("application test2", (done) => {
-        const iptraceInstance = iptrace("naver.com");
+        const iptraceInstance = iptrace("localhost");
 
         let hopCount = 0;
         let destinationCount = 0;
@@ -29,7 +29,6 @@ describe("iptrace test", () => {
 
         iptraceInstance.onHop((hop) => {
             hopCount++;
-            iptraceInstance.end();
         }).onFindDestinationIP((_destination) => {
             destinationCount++;
             destination = _destination;
