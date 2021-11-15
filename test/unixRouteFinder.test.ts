@@ -23,7 +23,7 @@ describe('UnixRouteFinder Status Test', function () {
 
     it("routeFinder 시작 후", async () => {
         const routeFinder = new RouteFinder("naver.com", parser, factory);
-        routeFinder.onDestination((destination => {
+        routeFinder.onFindDestinationIP((destination => {
             expect(routeFinder.status).to.be.eql(RouteFinderStatus.Start);
             routeFinder.end();
         })).start()
@@ -48,10 +48,10 @@ describe('UnixRouteFinder Feature Test', function () {
     const parser = new UnixRouteFinderParser();
     const factory = new UnixRouteFinderProcessFactory();
 
-    it("onDestination", async () => {
+    it("onFindDestinationIP", async () => {
         return new Promise((res) => {
             const routeFinder = new RouteFinder("localhost", parser, factory);
-            routeFinder.onDestination(destination => {
+            routeFinder.onFindDestinationIP(destination => {
                 assert(destination.ip != null);
             }).onClose(msg => {
                 res();
@@ -82,6 +82,19 @@ describe('UnixRouteFinder Feature Test', function () {
                 if(currentOS === 'linux'){
                     expect(msg).to.be.equal(-2);
                 }
+                res();
+            }).start().end();
+        })
+    })
+
+    it("empty domain", async () => {
+        return new Promise((res) => {
+            const routeFinder = new RouteFinder("!진성호!네이버!Empty", parser, factory);
+            routeFinder.onHop(() => {
+                throw new Error("not execute");
+            }).onFindDestinationIP(() => {
+                throw new Error("not execute");
+            }).onClose(() => {
                 res();
             }).start();
         })

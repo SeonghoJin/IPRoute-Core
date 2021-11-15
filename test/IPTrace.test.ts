@@ -1,6 +1,8 @@
 import {expect} from "chai";
 import {Hop, iptrace, RouteFinderStatus} from '../src';
 import {describe} from "mocha";
+import {Destination} from "../dist";
+import exp = require("constants");
 
 describe("iptrace test", () => {
 
@@ -11,11 +13,33 @@ describe("iptrace test", () => {
             expect(iptraceInstance.status).to.be.equal(RouteFinderStatus.Start);
             expect(hop.hop).to.be.equal(1);
             expect(hop.ip.address).to.be.equal('127.0.0.1');
-        }).onDestination((destination => {
+        }).onFindDestinationIP((destination => {
             expect(destination.ip.address).to.be.equal('127.0.0.1');
         })).onClose(() => {
             expect(iptraceInstance.status).to.be.equal(RouteFinderStatus.End);
             done();
+        }).start();
+    });
+
+    it("application test2", (done) => {
+        const iptraceInstance = iptrace("naver.com");
+
+        let hopCount = 0;
+        let destinationCount = 0;
+        let destination : Destination | null = null;
+
+        iptraceInstance.onHop((hop) => {
+            hopCount++;
+            iptraceInstance.end();
+        }).onFindDestinationIP((_destination) => {
+            destinationCount++;
+            destination = _destination;
+        }).onClose(() => {
+            expect(hopCount).equal(1);
+            expect(destinationCount).equal(1);
+            done();
+        }).onDestination((_destination) => {
+            expect(destination?.ip).to.be.equal(_destination.ip);
         }).start();
     })
 })

@@ -13,10 +13,12 @@ export class RouteFinder{
     private parser: RouteFinderParser;
     private processFactory: RouteFinderProcessFactory;
     private onHopCallback: ((hop: Hop) => void )| null = null;
+    private onFindDestinationIPCallback: ((destination: Destination) => void) | null = null;
     private onDestinationCallback: ((destination: Destination) => void) | null = null;
     private onErrorCallback: ((err: Error) => void) | null = null;
     private onCloseCallback: ((msg: string) => void) | null = null;
     private onRawMessageCallback: ((msg: string) => void) | null = null;
+    private destination: Destination | null = null;
 
 
     constructor(hostname: string, parser: RouteFinderParser, processFactory: RouteFinderProcessFactory) {
@@ -37,6 +39,7 @@ export class RouteFinder{
             this.setOnReadLineAtStdout(this.childProcess);
             this.setOnReadLineAtStderr(this.childProcess);
             this.setOnError(this.childProcess);
+            this.setOnRawMessage(this.childProcess);
         } catch (e) {
             this.status = RouteFinderStatus.BeforeStart;
             throw new Error(RouteFinderErrorMessage.NotCreatedFinder);
@@ -51,6 +54,11 @@ export class RouteFinder{
 
     public onDestination(cb: (destination: Destination) => void){
         this.onDestinationCallback = cb;
+        return this;
+    }
+
+    public onFindDestinationIP(cb: (destination: Destination) => void){
+        this.onFindDestinationIPCallback = cb;
         return this;
     }
 
@@ -89,9 +97,9 @@ export class RouteFinder{
                 if(parsedHop != null){
                     this.onHopCallback(parsedHop);
                 }
-            }
-            if(this.onRawMessageCallback != null){
-                this.onRawMessageCallback(code);
+                if(parsedHop != null && this.destination != null && this.destination.ip === parsedHop.ip){
+                    this.onDestinationCallback?.call(this, this.destination);
+                }
             }
         }));
     }
@@ -101,10 +109,11 @@ export class RouteFinder{
             throw new Error(RouteFinderErrorMessage.NotCreatedStdout);
         }
         createInterface(childProcess.stderr).once('line', ((code: string) => {
-            if(this.onDestinationCallback != null){
+            if(this.onFindDestinationIPCallback != null){
                 const parsedDestination = this.parser.parsingDestination(code);
                 if(parsedDestination != null){
-                    this.onDestinationCallback(parsedDestination);
+                    this.onFindDestinationIPCallback(parsedDestination);
+                    this.destination = parsedDestination;
                 }
             }
         }));
@@ -117,6 +126,25 @@ export class RouteFinder{
                 this.onErrorCallback(err)
             }
         }))
+    }
+
+    private setOnRawMessage(childProcess: ChildProcess) {
+        if(childProcess.stdout === null){
+            throw new Error(RouteFinderErrorMessage.NotCreatedStdout);
+        }
+        if(childProcess.stderr === null){
+            throw new Error(RouteFinderErrorMessage.NotCreatedStdout);
+        }
+        createInterface(childProcess.stdout).on('line', ((code: string) => {
+            if(this.onRawMessageCallback != null){
+                this.onRawMessageCallback(code);
+            }
+        }));
+        createInterface(childProcess.stderr).on('line', ((code: string) => {
+            if(this.onRawMessageCallback != null){
+                this.onRawMessageCallback(code);
+            }
+        }));
     }
 
     end() {
