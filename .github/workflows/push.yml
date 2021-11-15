@@ -34,7 +34,7 @@ jobs:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   ubuntu-test:
-    runs-on: ubuntu-latests
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         node-version: [ 14.x ]
