@@ -2,7 +2,6 @@ import {expect} from "chai";
 import {Hop, iptrace, RouteFinderStatus} from '../src';
 import {describe} from "mocha";
 import {Destination} from "../dist";
-import exp = require("constants");
 
 describe("iptrace test", () => {
 
