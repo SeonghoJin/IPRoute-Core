@@ -2,8 +2,10 @@ import {expect} from "chai";
 import {Hop, iptrace, RouteFinderStatus} from '../src';
 import {describe} from "mocha";
 import {Destination} from "../src/index";
+import {platform} from "os";
 
 describe("iptrace test", () => {
+
 
     it("application test",(done) => {
         const iptraceInstance = iptrace("localhost");
@@ -21,6 +23,10 @@ describe("iptrace test", () => {
     });
 
     it("application test2", (done) => {
+        const os = platform();
+        if(os !== "darwin"){
+            return;
+        }
         const iptraceInstance = iptrace("localhost");
 
         let hopCount = 0;

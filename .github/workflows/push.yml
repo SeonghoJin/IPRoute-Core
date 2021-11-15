@@ -6,8 +6,8 @@ name: Code Test And Build Test
 on: [push, workflow_dispatch]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  macos-test:
+    runs-on: macos-latest
     strategy:
       matrix:
         node-version: [14.x]
@@ -32,3 +32,31 @@ jobs:
     - run: npm run build --if-present
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  ubuntu-test:
+    runs-on: ubuntu-latests
+    strategy:
+      matrix:
+        node-version: [ 14.x ]
+        ts-project: [ tsconfig.json ]
+
+    env:
+      TS_NODE_PROJECT: ${{ matrix.ts-project }}
+
+    steps:
+      - uses: actions/checkout@v2
+        name: Use Node.js ${{ matrix.node-version }}
+
+      - uses: actions/setup-node@v2
+        name: 'npm install && npm build'
+        with:
+          node-version: ${{ matrix.node-version }}
+          registry-url: https://registry.npmjs.org/
+          cache: 'npm'
+      - run: npm cache clean --force
+      - run: npm ci
+      - run: npm test
+      - run: npm run build --if-present
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
