@@ -32,5 +32,6 @@
     "hooks": {
       "pre-push": "npm run test"
     }
-  }
+  },
+  "os": ["darwin", "linux"]
 }
